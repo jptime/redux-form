@@ -84,7 +84,7 @@ function createConnectedField<L, M>(structure: Structure<L, M>) {
       return this.ref.current
     }
 
-    handleChange = (event: any) => {
+    handleChange = (eventOrValue: any) => {
       const {
         name,
         dispatch,
@@ -94,7 +94,7 @@ function createConnectedField<L, M>(structure: Structure<L, M>) {
         _reduxForm,
         value: previousValue
       } = this.props
-      const newValue = onChangeValue(event, { name, parse, normalize })
+      const newValue = onChangeValue(eventOrValue, { name, parse, normalize })
 
       let defaultPrevented = false
       if (onChange) {
@@ -103,13 +103,13 @@ function createConnectedField<L, M>(structure: Structure<L, M>) {
         // to prevent the following error:
         // `One of the sources for assign has an enumerable key on the prototype chain`
         // Reference: https://github.com/facebook/react-native/issues/5507
-        if (!isReactNative && isEvent(event)) {
+        if (!isReactNative) {
           onChange(
             {
-              ...event,
+              ...(isEvent(eventOrValue) ? eventOrValue : (undefined: any)),
               preventDefault: () => {
                 defaultPrevented = true
-                return eventPreventDefault(event)
+                return eventPreventDefault(eventOrValue)
               }
             },
             newValue,
@@ -117,7 +117,7 @@ function createConnectedField<L, M>(structure: Structure<L, M>) {
             name
           )
         } else {
-          const onChangeResult = onChange(event, newValue, previousValue, name)
+          const onChangeResult = onChange(eventOrValue, newValue, previousValue, name)
           // Return value of change handler affecting preventDefault is RN
           // specific behavior.
           if (isReactNative) {
